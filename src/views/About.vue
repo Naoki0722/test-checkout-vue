@@ -2,81 +2,76 @@
   <div class="home">
     <h1>Checkoutを使った実装ページ</h1>
     <button @click="$router.push('/')">topページへ戻る</button>
-    <!-- 下記はポップアップパターン -->
-    <!-- <vue-stripe-checkout
-      ref="checkoutRef"
-      :image="checkoutOptions.image"
-      :name="checkoutOptions.name"
-      :description="checkoutOptions.description"
-      :currency="checkoutOptions.currency"
-      :amount="checkoutOptions.amount"
-      :allow-remember-me="false"
-    ></vue-stripe-checkout>
-    <button @click="checkout1">Checkout 1</button> -->
-
-
-    <!-- 下記はリダイレクトパターン、こちらをうまく作りたい -->
-    <!-- Create a button that your customers click to complete their purchase. Customize the styling to suit your branding. -->
-    <button
-      style="background-color:#6772E5;color:#FFF;padding:8px 12px;border:0;border-radius:4px;font-size:1em"
-      id="redirect-botton"
-      role="link"
-      type="button"
-      @click="checkout2"
-    >
-      決済ページへ
-    </button>
+    <div class="stripe-area">
+      <stripe-checkout
+        ref="checkoutRef"
+        mode="payment"
+        :pk="publishableKey"
+        :line-items="lineItems"
+        :success-url="successURL"
+        :cancel-url="cancelURL"
+        @loading="v => loading = v"
+      />
+      <button @click="submit">1回限りの購入ページへ</button>
+      <stripe-checkout
+        ref="checkoutRefSubsc"
+        mode="subscription"
+        :pk="publishableKey"
+        :line-items="lineItems2"
+        :success-url="successURL"
+        :cancel-url="cancelURL"
+        @loading="v => loading = v"
+      />
+      <button @click="submit2">サブスクリプション</button>
+    </div>
 
     <div id="error-message"></div>
   </div>
 </template>
 
-<script src="https://js.stripe.com/v3/"></script>
 <script>
-const stripe = Stripe('pk_test_51I9UrdGfr486TDLv6kvnsBtlrMuR3U041eg5HmUHUSUjrUa6dgWvM5rCTRzitv3Ox4y4jix1Cb6tqtltLW2sP4mF001nJ3V5oE');
+import { StripeCheckout } from '@vue-stripe/vue-stripe';
 export default {
   components: {
+    StripeCheckout
   },
   data() {
+    this.publishableKey = 'pk_test_51I9UrdGfr486TDLv6kvnsBtlrMuR3U041eg5HmUHUSUjrUa6dgWvM5rCTRzitv3Ox4y4jix1Cb6tqtltLW2sP4mF001nJ3V5oE';
     return {
-      // checkoutOptions: {
-      //   image: "https://i.imgur.com/HhqxVCW.jpg",
-      //   name: "コート",
-      //   description: "上質なコートです",
-      //   currency: "jpy",
-      //   amount: 5000
-      // },
+      loading: false,
+      lineItems: [
+        {
+          price: 'price_1IAX4wGfr486TDLv2VtvWrCK',
+          quantity: 1,
+        },
+      ],
+      lineItems2: [
+        {
+          price: 'price_1IAbAuGfr486TDLvCZ1qwXo9',
+          quantity: 1,
+        },
+      ],
+      successURL: "https://vuestripe.com/stripe-checkout/one-time-payment/",
+      cancelURL: "https://vuestripe.com/stripe-checkout/one-time-payment/",
+
     };
   },
   methods: {
-    // checkout1() {
-    //   this.$refs.checkoutRef.open();
-    // },
-    checkout2 () {
-      this.stripe.redirectToCheckout({
-        lineItems: [{price: 'price_1I9lgQGfr486TDLvBzxmvsPm', quantity: 1}],
-        mode: 'payment',
-        /*
-        * Do not rely on the redirect to the successUrl for fulfilling
-        * purchases, customers may not always reach the success_url after
-        * a successful payment.
-        * Instead use one of the strategies described in
-        * https://stripe.com/docs/payments/checkout/fulfill-orders
-        */
-        successUrl: 'https://your-website.com/success',
-        cancelUrl: 'https://your-website.com/canceled',
-      })
-      .then(function (result) {
-        if (result.error) {
-          /*
-          * If `redirectToCheckout` fails due to a browser or network
-          * error, display the localized error message to your customer.
-          */
-          var displayError = document.getElementById('error-message');
-          displayError.textContent = result.error.message;
-        }
-      });
+    submit() {
+      this.$refs.checkoutRef.redirectToCheckout();
+    },
+    submit2() {
+      this.$refs.checkoutRefSubsc.redirectToCheckout();
     }
   }
 };
 </script>
+
+
+<style scoped>
+.stripe-area {
+  display: flex;
+  justify-content: center;
+  margin: 100px 0;
+}
+</style>
