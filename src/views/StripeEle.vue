@@ -75,6 +75,7 @@ export default {
     this.cardNumber.destroy();
     this.cardExpiry.destroy();
     this.cardCvc.destroy();
+    this.$refs.cardRef.element.destroy();
   },
   methods: {
     async createToken () {
@@ -84,7 +85,7 @@ export default {
         document.getElementById('card-error').innerHTML = error.message;
         return;
       }
-      window.alert(token);
+      console.log(token);
       // handle the token
       // send it to your server
     },
